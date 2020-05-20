@@ -18,6 +18,6 @@ type Access struct {
 }
 
 type DBAccess struct {
-	DbID primitive.ObjectID `json:"_id,omitempty"`
-	Access
+	DbID   primitive.ObjectID `json:"_id,omitempty"`
+	Access `bson:",inline"`
 }

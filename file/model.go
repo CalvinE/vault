@@ -34,7 +34,7 @@ func NewFile() *File {
 	}
 }
 
-// Validate is a functi on that validates a File struct to make sure it has valid data.
+// Validate is a function that validates a File struct to make sure it has valid data.
 func (f *File) Validate() (bool, map[string]string) {
 	isValid := false
 	errorMessages := make(map[string]string)

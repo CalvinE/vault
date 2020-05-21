@@ -12,7 +12,6 @@ type Access struct {
 	AccessID          string    `json:"accessId" bson:"accessId"`
 	FileID            string    `json:"fileId" bson:"fileId"`
 	Name              string    `json:"name,omitempty" bson:"name,omitempty"`
-	Disabled          bool      `json:"disabled" bson:"disabled"`
 	DisabledDate      time.Time `json:"disabledDate,omitempty" bson:"disabledDate,omitempty"`
 	CreatedDate       time.Time `json:"createdDate" bson:"createdDate"`
 	ExpirationDate    time.Time `json:"expirationDate,omitempty" bson:"expirationDate,omitempty"`
@@ -31,8 +30,34 @@ type DBAccess struct {
 func NewAccess() *Access {
 	return &Access{
 		AccessID:    uuid.NewV4().String(),
-		Disabled:    false,
 		CreatedDate: time.Now(),
 		AccessCount: 0,
 	}
+}
+
+// Vaildate is a function that validates an Access struct to make sure it has valid data.
+func (a *Access) Vaildate() (bool, map[string]string) {
+	isValid := false
+	errorMessages := make(map[string]string)
+
+	return isValid, errorMessages
+}
+
+// IsDisabled returns true if the access' DisabledDate is set.
+func (a *Access) IsDisabled() bool {
+	unsetTime := time.Time{}
+	wasDeleted := a.DisabledDate != unsetTime
+	return wasDeleted
+}
+
+// IsExpired returns true if the file has an expiration data and it is after the current time.
+func (a *Access) IsExpired() bool {
+	unsetTime := time.Time{}
+	hasExpirationDate := a.ExpirationDate != unsetTime
+	if hasExpirationDate == true {
+		now := time.Now()
+		isExpired := now.After(a.ExpirationDate)
+		return isExpired
+	}
+	return hasExpirationDate
 }

@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 
+	"calvinechols.com/vault/env"
 	"calvinechols.com/vault/file"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,8 +19,8 @@ type fileMongoRepo struct {
 func NewFileMongoRepo(connection *mongo.Client) file.Repo {
 	return &fileMongoRepo{
 		connection:     connection,
-		dbName:         "vault",
-		collectionName: "file",
+		dbName:         env.Get("MONGO_DATABASE", "vault"),
+		collectionName: env.Get("MONGO_FILE_COLLECTION", "file"),
 	}
 }
 

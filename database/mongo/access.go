@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"calvinechols.com/vault/access"
+	"calvinechols.com/vault/env"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -18,8 +19,8 @@ type accessMongoRepo struct {
 func NewAccessMongoRepo(connection *mongo.Client) access.Repo {
 	return &accessMongoRepo{
 		connection:     connection,
-		dbName:         "vault",
-		collectionName: "access",
+		dbName:         env.Get("MONGO_DATABASE", "vault"),
+		collectionName: env.Get("MONGO_ACCESS_COLLECTION", "access"),
 	}
 }
 
@@ -32,10 +33,6 @@ func (r *accessMongoRepo) AddAccess(access *access.Access) (string, error) {
 }
 
 func (r *accessMongoRepo) GetAccess(id string) (*access.Access, error) {
-	// documentID, err := primitive.ObjectIDFromHex(id)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	var access *access.Access
 	err := r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"accessId": id}).Decode(&access)
 	if err != nil {

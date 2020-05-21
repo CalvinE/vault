@@ -1,33 +1,44 @@
 package mongo
 
 import (
-	"context"
+	"fmt"
 	"testing"
 
 	"calvinechols.com/vault/access"
-	"calvinechols.com/vault/env"
 	uuid "github.com/satori/go.uuid"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// TestMainAccess is the test function for this file. its in test main because the testAddAccess func needs to run before testGetAccess func.
-func TestMainAccess(t *testing.T) {
-	accessID, fileID, mongoConnectionString := uuid.NewV4().String(), uuid.NewV4().String(), env.Get("MONGODB_DATA_CONNECTION", "mongodb://root:password@localhost:27017")
-	options := options.Client().ApplyURI(mongoConnectionString)
-	client, err := mongo.Connect(context.TODO(), options)
-	if err != nil {
-		t.Errorf("an error occurred while connecting to database: %v", err)
+var accessID = uuid.NewV4().String()
+var accessName = "test-access"
+var accessRepo access.Repo
+
+func TestAddAccess(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestAddAccess")
 	}
-	accessMongoRepo := NewAccessMongoRepo(client)
-	testAddAccess(t, accessMongoRepo, accessID, fileID)
-	testGetAccess(t, accessMongoRepo, accessID, fileID)
+	testAccess := access.NewAccess()
+	testAccess.AccessID = accessID
+	testAccess.FileID = fileID
+	testAccess.Name = accessName
+	newAccessID, err := accessRepo.AddAccess(testAccess)
+	if err != nil {
+		t.Errorf("an error occurred while adding the test access: %v\n", err)
+	} else {
+		fmt.Printf("new inserted access id: %v\n", newAccessID)
+	}
 }
 
-func testAddAccess(t *testing.T, accessMongoRepo access.Repo, accessID, fileID string) {
-
-}
-
-func testGetAccess(t *testing.T, accessMongoRepo access.Repo, accessID, fileID string) {
-
+func TestGetAccess(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestGetAccess")
+	}
+	access, err := accessRepo.GetAccess(accessID)
+	if err != nil {
+		t.Errorf("error occurred while getting access from database: %v", err)
+	}
+	if access.FileID != fileID {
+		t.Errorf("the access returned from the does not have the expected fileID: got = %v expected: %v", access.AccessCount, accessID)
+	} else {
+		fmt.Printf("access retreived from database: id = %v, name = %v\n", access.AccessID, access.Name)
+	}
 }

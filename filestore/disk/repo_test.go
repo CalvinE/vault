@@ -21,14 +21,9 @@ func TestCreateFile(t *testing.T) {
 func TestReadFile(t *testing.T) {
 	fsrepo := NewFileStoreDiskRepo()
 	_, err := fsrepo.ReadFile(testFile)
-
 	if err != nil {
 		t.Errorf("Error occurred reading file from %s: %v", testFile, err)
 	}
-
-	// if data != nil {
-	// 	fmt.Printf("%v: %v\n", len(data), data)
-	// }
 }
 
 func TestGetFileHandle(t *testing.T) {
@@ -37,10 +32,4 @@ func TestGetFileHandle(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred getting file handler: %v", err)
 	}
-	// fi, err := fh.Stat()
-	// if err != nil {
-	// 	t.Errorf("")
-	// }
-	// filesize := fi.Size()
-	// fmt.Printf("%s read is %d bytes\n", testFile, filesize)
 }

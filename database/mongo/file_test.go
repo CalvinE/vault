@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -13,21 +14,25 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var mongoConnectionString = env.Get("MONGODB_DATA_CONNECTION", "mongodb://root:password@localhost:27017")
+
+var fileID = uuid.NewV4().String()
+var ownerID = uuid.NewV4().String()
+var fileRepo file.Repo
+
 // TestMainFile is the test function for this file. its in test main because the testAddFile func needs to run before testGetFile func.
-func TestMainFile(t *testing.T) {
-	fileID, ownerID, mongoConnectionString := uuid.NewV4().String(), uuid.NewV4().String(), env.Get("MONGODB_DATA_CONNECTION", "mongodb://root:password@localhost:27017")
+func TestMain(m *testing.M) {
 	options := options.Client().ApplyURI(mongoConnectionString)
-	client, err := mongo.Connect(context.TODO(), options)
-	if err != nil {
-		t.Errorf("an error occurred while connecting to database: %v", err)
-	}
-	fileMongoRepo := NewFileMongoRepo(client)
-	testAddFile(t, fileMongoRepo, fileID, ownerID)
-	testGetFile(t, fileMongoRepo, fileID, ownerID)
+	client, _ := mongo.Connect(context.TODO(), options)
+	fileRepo = NewFileMongoRepo(client)
+	accessRepo = NewAccessMongoRepo(client)
+	os.Exit(m.Run())
 }
 
-func testAddFile(t *testing.T, fileMongoRepo file.Repo, fileID, fileOwnerID string) {
-
+func TestAddFile(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestAddFile")
+	}
 	testFile := &file.File{
 		FileID:      fileID,
 		CreatedDate: time.Now(),
@@ -35,24 +40,26 @@ func testAddFile(t *testing.T, fileMongoRepo file.Repo, fileID, fileOwnerID stri
 		StorageType: "disk",
 		MimeType:    "plain/text",
 		WasDeleted:  false,
-		OwnerID:     fileOwnerID,
+		OwnerID:     ownerID,
 	}
-	newFileID, err := fileMongoRepo.AddFile(testFile)
+	newFileID, err := fileRepo.AddFile(testFile)
 	if err != nil {
-		t.Errorf("an error occurred while adding the test file: %v", err)
+		t.Errorf("an error occurred while adding the test file: %v\n", err)
 	} else {
-		fmt.Printf("new inserted file database id: %v\n", newFileID)
+		fmt.Printf("new inserted file id: %v\n", newFileID)
 	}
-
 }
 
-func testGetFile(t *testing.T, fileMongoRepo file.Repo, fileID, fileOwnerID string) {
-	file, err := fileMongoRepo.GetFile(fileID)
+func TestGetFile(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestGetFile")
+	}
+	file, err := fileRepo.GetFile(fileID)
 	if err != nil {
 		t.Errorf("error occurred while getting file from database: %v", err)
 	}
-	if file.OwnerID != fileOwnerID {
-		t.Errorf("the file returned from the does not have the expected ownerID: got = %v expected: %v", file.OwnerID, fileOwnerID)
+	if file.OwnerID != ownerID {
+		t.Errorf("the file returned from the does not have the expected ownerID: got = %v expected: %v", file.OwnerID, ownerID)
 	} else {
 		fmt.Printf("file retreived from database: id = %v, name = %v\n", file.FileID, file.Name)
 	}

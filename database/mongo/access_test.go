@@ -5,12 +5,7 @@ import (
 	"testing"
 
 	"calvinechols.com/vault/access"
-	uuid "github.com/satori/go.uuid"
 )
-
-var accessID = uuid.NewV4().String()
-var accessName = "test-access"
-var accessRepo access.Repo
 
 func TestAddAccess(t *testing.T) {
 	if testing.Short() {

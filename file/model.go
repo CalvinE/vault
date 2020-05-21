@@ -3,6 +3,7 @@ package file
 import (
 	"time"
 
+	uuid "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -11,7 +12,7 @@ type File struct {
 	FileID         string    `json:"fileId" bson:"fileId"`
 	CreatedDate    time.Time `json:"createdDate" bson:"createdDate"`
 	StorageType    string    `json:"storageType" bson:"storageType"`
-	FileName       string    `json:"fileName" bson:"fileName"`
+	Name           string    `json:"name" bson:"name"`
 	MimeType       string    `json:"mimeType" bson:"mimeType"`
 	WasDeleted     bool      `json:"deleted" bson:"deleted"`
 	DeletedDate    time.Time `json:"dateDeleted,omitempty" bson:"dateDeleted,omitempty"`
@@ -23,4 +24,13 @@ type File struct {
 type DBFile struct {
 	File `bson:",inline"`
 	DbID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+}
+
+// NewFile returns a new File object
+func NewFile() *File {
+	return &File{
+		FileID:      uuid.NewV4().String(),
+		CreatedDate: time.Now(),
+		WasDeleted:  false,
+	}
 }

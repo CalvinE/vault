@@ -1,11 +1,10 @@
-package database
+package mongo
 
 import (
 	"context"
 
 	"calvinechols.com/vault/access"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -24,22 +23,21 @@ func NewAccessMongoRepo(connection *mongo.Client) access.Repo {
 	}
 }
 
-func (r *accessMongoRepo) AddAccess(access *access.DBAccess) (string, error) {
-	result, err := r.connection.Database(r.dbName).Collection(r.collectionName).InsertOne(context.TODO(), access)
+func (r *accessMongoRepo) AddAccess(access *access.Access) (string, error) {
+	_, err := r.connection.Database(r.dbName).Collection(r.collectionName).InsertOne(context.TODO(), access)
 	if err != nil {
 		return "", err
 	}
-	idString := result.InsertedID.(primitive.ObjectID).String()
-	return idString, nil
+	return access.AccessID, nil
 }
 
-func (r *accessMongoRepo) GetAccess(id string) (*access.DBAccess, error) {
-	documentID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return nil, err
-	}
-	var access *access.DBAccess
-	err = r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"_id": documentID}).Decode(&access)
+func (r *accessMongoRepo) GetAccess(id string) (*access.Access, error) {
+	// documentID, err := primitive.ObjectIDFromHex(id)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	var access *access.Access
+	err := r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"accessId": id}).Decode(&access)
 	if err != nil {
 		return nil, err
 	}

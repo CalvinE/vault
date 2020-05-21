@@ -1,11 +1,10 @@
-package database
+package mongo
 
 import (
 	"context"
 
 	"calvinechols.com/vault/file"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -24,22 +23,21 @@ func NewFileMongoRepo(connection *mongo.Client) file.Repo {
 	}
 }
 
-func (r *fileMongoRepo) AddFile(file *file.DBFile) (string, error) {
-	result, err := r.connection.Database(r.dbName).Collection(r.collectionName).InsertOne(context.TODO(), file)
+func (r *fileMongoRepo) AddFile(file *file.File) (string, error) {
+	_, err := r.connection.Database(r.dbName).Collection(r.collectionName).InsertOne(context.TODO(), file)
 	if err != nil {
 		return "", err
 	}
-	idString := result.InsertedID.(primitive.ObjectID).String()
-	return idString, nil
+	return file.FileID, nil
 }
 
-func (r *fileMongoRepo) GetFile(id string) (*file.DBFile, error) {
-	documentID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return nil, err
-	}
-	var file *file.DBFile
-	err = r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"_id": documentID}).Decode(&file)
+func (r *fileMongoRepo) GetFile(id string) (*file.File, error) {
+	// documentID, err := primitive.ObjectIDFromHex(id)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	var file *file.File
+	err := r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"fileId": id}).Decode(&file)
 	if err != nil {
 		return nil, err
 	}

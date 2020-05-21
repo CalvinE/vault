@@ -41,24 +41,17 @@ func (r *fileStoreDiskRepo) ReadFile(name string) ([]byte, error) {
 
 func (r *fileStoreDiskRepo) CreateFile(name string, data []byte) error {
 	filePath := filepath.Dir(name)
-
 	err := os.MkdirAll(filePath, os.ModePerm)
-
 	if err != nil {
 		return err
 	}
-
 	f, err := os.Create(name)
-
 	if err != nil {
 		return err
 	}
-
 	_, err = f.Write(data)
-
 	if err != nil {
 		return err
 	}
-
 	return err
 }

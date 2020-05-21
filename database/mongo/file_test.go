@@ -18,7 +18,6 @@ func TestAddFile(t *testing.T) {
 		Name:        "temp-file-name",
 		StorageType: "disk",
 		MimeType:    "plain/text",
-		WasDeleted:  false,
 		OwnerID:     ownerID,
 	}
 	newFileID, err := fileRepo.AddFile(testFile)

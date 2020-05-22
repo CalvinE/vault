@@ -1,6 +1,7 @@
 package access
 
 import (
+	"fmt"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -26,6 +27,17 @@ type DBAccess struct {
 	Access `bson:",inline"`
 }
 
+// ValidationError is an error that relays what about a access object made it invalid.
+type ValidationError map[string]string
+
+func (fve ValidationError) Error() string {
+	var errorString string = "Access object was invalid:\n"
+	for k := range fve {
+		errorString += fmt.Sprintf("\t%v: %v\n", k, fve[k])
+	}
+	return errorString
+}
+
 // NewAccess returns a new Access object
 func NewAccess() *Access {
 	return &Access{
@@ -35,12 +47,28 @@ func NewAccess() *Access {
 	}
 }
 
-// Vaildate is a function that validates an Access struct to make sure it has valid data.
-func (a *Access) Vaildate() (bool, map[string]string) {
-	isValid := false
+// Validate is a function that validates an Access struct to make sure it has valid data.
+func (a *Access) Validate() ValidationError {
 	errorMessages := make(map[string]string)
 
-	return isValid, errorMessages
+	if a == nil {
+		errorMessages["General"] = "the access cannot be nil."
+		return ValidationError(errorMessages)
+	}
+
+	if a.AccessID == "" {
+		errorMessages["AccessID"] = fmt.Sprint("AccessID cannot be empty")
+	}
+
+	if a.FileID == "" {
+		errorMessages["FileID"] = fmt.Sprint("FileID cannot be empty")
+	}
+
+	if a.AccessCount < 0 {
+		errorMessages["AccessCount"] = fmt.Sprint("AccessCount must be greater than or equal to 0")
+	}
+
+	return ValidationError(errorMessages)
 }
 
 // IsDisabled returns true if the access' DisabledDate is set.

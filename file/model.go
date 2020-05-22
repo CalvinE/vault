@@ -26,6 +26,17 @@ type DBFile struct {
 	DbID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 }
 
+// ValidationError is an error that relays what about a file object made it invalid.
+type ValidationError map[string]string
+
+func (fve ValidationError) Error() string {
+	var errorString string = "File object was invalid:\n"
+	for k := range fve {
+		errorString += fmt.Sprintf("\t%v: %v\n", k, fve[k])
+	}
+	return errorString
+}
+
 // NewFile returns a new File object
 func NewFile() *File {
 	return &File{
@@ -35,37 +46,35 @@ func NewFile() *File {
 }
 
 // Validate is a function that validates a File struct to make sure it has valid data.
-func (f *File) Validate() (bool, map[string]string) {
-	isValid := false
+func (f *File) Validate() ValidationError {
 	errorMessages := make(map[string]string)
 
 	if f == nil {
-		isValid = false
 		errorMessages["General"] = "the file cannot be nil."
-		return isValid, errorMessages
+		return ValidationError(errorMessages)
 	}
 
 	if f.MimeType == "" {
-		isValid = false
 		errorMessages["MimeType"] = fmt.Sprint("MimeType cannot be empty")
 	}
 
 	if f.StorageType == "" {
-		isValid = false
 		errorMessages["StorageType"] = fmt.Sprint("StorageType cannot be empty")
 	}
 
 	if f.OwnerID == "" {
-		isValid = false
 		errorMessages["OwnerID"] = fmt.Sprint("OwnerID cannot be empty")
 	}
 
 	if f.Name == "" {
-		isValid = false
 		errorMessages["Name"] = fmt.Sprint("Name cannot be empty")
 	}
 
-	return isValid, errorMessages
+	if len(errorMessages) > 0 {
+		return ValidationError(errorMessages)
+	}
+
+	return nil
 }
 
 // IsDeleted returns true if the file's deletedDate is set.

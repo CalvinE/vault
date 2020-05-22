@@ -12,20 +12,17 @@ func TestNewFile(t *testing.T) {
 		t.Error("newly created file id is empty.\n")
 	}
 	if f.CreatedDate == unsetTime {
-		t.Errorf("CreatedDate should be initialized to the time NewFile is called\n")
+		t.Errorf("CreatedDate should be initialized to the time NewFile is called.\n")
 	}
 }
 
 func TestValidate(t *testing.T) {
 	var file *File
-	isValid, errorMessages := file.Validate()
-	if isValid == true {
-		t.Error("a nil file is not valid\n")
+	err := file.Validate()
+	if err == nil {
+		t.Error("a nil file should not be valid.\n")
 	}
-	numErrorMessages := len(errorMessages)
-	if numErrorMessages != 1 {
-		t.Error("there should be one error message for a nil file\n")
-	}
+	// TODO: finish this test...
 }
 
 func TestIsDeleted(t *testing.T) {
@@ -55,6 +52,6 @@ func TestIsExpired(t *testing.T) {
 	file.ExpirationDate = time.Now().Add(100)
 	isExpired = file.IsExpired()
 	if isExpired == true {
-		t.Errorf("ExpirationDate in the future should resulkt in IsExpired returning false: ExpirationDate: %v, isExpired: %v", file.ExpirationDate, isExpired)
+		t.Errorf("ExpirationDate in the future should result in IsExpired returning false: ExpirationDate: %v, isExpired: %v", file.ExpirationDate, isExpired)
 	}
 }

@@ -10,21 +10,26 @@ import (
 
 // Access this is a type representing access to files in the vault
 type Access struct {
-	AccessID          string    `json:"accessId" bson:"accessId"`
-	FileID            string    `json:"fileId" bson:"fileId"`
-	Name              string    `json:"name,omitempty" bson:"name,omitempty"`
-	DisabledDate      time.Time `json:"disabledDate,omitempty" bson:"disabledDate,omitempty"`
-	CreatedDate       time.Time `json:"createdDate" bson:"createdDate"`
-	ExpirationDate    time.Time `json:"expirationDate,omitempty" bson:"expirationDate,omitempty"`
-	AllowAnonymous    bool      `json:"allowAnonymous" bson:"allowAnonymous"`
-	AnonymousPassword string    `json:"anonymousPassword,omitempty" bson:"anonymousPassword,omitempty"`
-	AccessCount       int64     `json:"accessCount" bson:"accessCount"`
+	AccessID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	FileToken         string             `json:"fileToken" bson:"fileToken"`
+	AccessToken       string             `json:"accessToken" bson:"accessToken"`
+	Name              string             `json:"name,omitempty" bson:"name,omitempty"`
+	DisabledDate      time.Time          `json:"disabledDate,omitempty" bson:"disabledDate,omitempty"`
+	CreatedDate       time.Time          `json:"createdDate" bson:"createdDate"`
+	ExpirationDate    time.Time          `json:"expirationDate,omitempty" bson:"expirationDate,omitempty"`
+	AllowAnonymous    bool               `json:"allowAnonymous" bson:"allowAnonymous"`
+	AnonymousPassword string             `json:"anonymousPassword,omitempty" bson:"anonymousPassword,omitempty"`
+	AccessCount       int64              `json:"accessCount" bson:"accessCount"`
+	CreatorID         string             `json:"creator" bson:"creator"`
 }
 
-// DBAccess represents an access from the database
-type DBAccess struct {
-	DbID   primitive.ObjectID `json:"_id,omitempty"`
-	Access `bson:",inline"`
+// Log is a type that represents the attempted use of an Access to get a file, successful or not.
+type Log struct {
+	LogID         primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	AccessToken   string             `json:"accessId" bson:"accessId"`
+	ClientIP      string             `json:"clientIp" bson:"clientIp"`
+	FailureReason string             `json:"failureReason,omitempty" bson:"failureReason,omitempty"`
+	AttemptDate   time.Time          `json:"attemptDate" bson:"attemptDate"`
 }
 
 // ValidationError is an error that relays what about a access object made it invalid.
@@ -39,16 +44,28 @@ func (fve ValidationError) Error() string {
 }
 
 // NewAccess returns a new Access object
-func NewAccess() *Access {
+func NewAccess(creatorID, fileToken string) *Access {
 	return &Access{
-		AccessID:    uuid.NewV4().String(),
-		CreatedDate: time.Now(),
 		AccessCount: 0,
+		AccessToken: uuid.NewV4().String(),
+		CreatedDate: time.Now(),
+		CreatorID:   creatorID,
+		FileToken:   fileToken,
+	}
+}
+
+// NewLog returns a new Log object
+func NewLog(accessToken, clientIP, failureReason string) *Log {
+	return &Log{
+		AccessToken:   accessToken,
+		ClientIP:      clientIP,
+		FailureReason: failureReason,
+		AttemptDate:   time.Now(),
 	}
 }
 
 // Validate is a function that validates an Access struct to make sure it has valid data.
-func (a *Access) Validate() ValidationError {
+func (a *Access) Validate() error {
 	errorMessages := make(map[string]string)
 
 	if a == nil {
@@ -56,12 +73,16 @@ func (a *Access) Validate() ValidationError {
 		return ValidationError(errorMessages)
 	}
 
-	if a.AccessID == "" {
-		errorMessages["AccessID"] = fmt.Sprint("AccessID cannot be empty")
+	if a.AccessToken == "" {
+		errorMessages["AccessToken"] = fmt.Sprint("AccessToken cannot be empty")
 	}
 
-	if a.FileID == "" {
-		errorMessages["FileID"] = fmt.Sprint("FileID cannot be empty")
+	if a.CreatorID == "" {
+		errorMessages["CreatorID"] = fmt.Sprint("AccessToken cannot be empty")
+	}
+
+	if a.FileToken == "" {
+		errorMessages["FileToken"] = fmt.Sprint("FileToken cannot be empty")
 	}
 
 	if a.AccessCount < 0 {

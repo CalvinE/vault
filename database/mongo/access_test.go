@@ -3,37 +3,36 @@ package mongo
 import (
 	"fmt"
 	"testing"
-
-	"calvinechols.com/vault/access"
 )
 
-func TestAddAccess(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping TestAddAccess")
-	}
-	testAccess := access.NewAccess()
-	testAccess.AccessID = accessID
-	testAccess.FileID = fileID
-	testAccess.Name = accessName
-	newAccessID, err := accessRepo.AddAccess(testAccess)
-	if err != nil {
-		t.Errorf("an error occurred while adding the test access: %v\n", err)
-	} else {
-		fmt.Printf("new inserted access id: %v\n", newAccessID)
-	}
-}
+func TestAccessRepo(t *testing.T) {
+	t.Run("AddAccess", func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("Skipping AddAccess Test")
+		}
+		a.Name = accessName
+		newAccessToken, err := accessRepo.AddAccess(a)
+		if err != nil {
+			t.Errorf("an error occurred while adding the test access: %v\n", err)
+		} else {
+			fmt.Printf("new inserted access token: %v\n", newAccessToken)
+		}
+	})
 
-func TestGetAccess(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping TestGetAccess")
-	}
-	access, err := accessRepo.GetAccess(accessID)
-	if err != nil {
-		t.Errorf("error occurred while getting access from database: %v", err)
-	}
-	if access.FileID != fileID {
-		t.Errorf("the access returned from the does not have the expected fileID: got = %v expected: %v", access.AccessCount, accessID)
-	} else {
-		fmt.Printf("access retreived from database: id = %v, name = %v\n", access.AccessID, access.Name)
-	}
+	t.Run("GetAccessByAccessToken", func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("Skipping GetAccess Test")
+		}
+		access, err := accessRepo.GetAccessByAccessToken(a.AccessToken)
+		if err != nil {
+			t.Errorf("error occurred while getting access from database: %v", err)
+		}
+		if access.FileToken != f.FileToken {
+			t.Errorf("the access returned from the does not have the expected fileToken: got = %v expected: %v", access.FileToken, f.FileToken)
+		} else {
+			fmt.Printf("access retreived from database: id = %v, name = %v\n", access.AccessID, access.Name)
+		}
+	})
+
+	// TODO Add access log tests
 }

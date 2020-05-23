@@ -29,16 +29,21 @@ func (r *fileMongoRepo) AddFile(file *file.File) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return file.FileID, nil
+	return file.FileToken, nil
 }
 
-func (r *fileMongoRepo) GetFile(id string) (*file.File, error) {
-	// documentID, err := primitive.ObjectIDFromHex(id)
-	// if err != nil {
-	// 	return nil, err
-	// }
+// func (r *fileMongoRepo) GetFile(id primitive.ObjectID) (*file.File, error) {
+// 	var file *file.File
+// 	err := r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"_id": id}).Decode(&file)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return file, nil
+// }
+
+func (r *fileMongoRepo) GetFileByFileToken(fileToken string) (*file.File, error) {
 	var file *file.File
-	err := r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"fileId": id}).Decode(&file)
+	err := r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"fileToken": fileToken}).Decode(&file)
 	if err != nil {
 		return nil, err
 	}

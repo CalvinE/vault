@@ -6,9 +6,9 @@ import (
 )
 
 func TestNewFile(t *testing.T) {
-	f := NewFile()
+	f := NewFile("", "", "")
 	unsetTime := time.Time{}
-	if f.FileID == "" {
+	if f.FileToken == "" {
 		t.Error("newly created file id is empty.\n")
 	}
 	if f.CreatedDate == unsetTime {
@@ -26,7 +26,7 @@ func TestValidate(t *testing.T) {
 }
 
 func TestIsDeleted(t *testing.T) {
-	file := NewFile()
+	file := NewFile("", "", "")
 	isDeleted := file.IsDeleted()
 	if isDeleted == true {
 		t.Errorf("file without DeletedDate set should return false got: %v\n", isDeleted)
@@ -39,7 +39,7 @@ func TestIsDeleted(t *testing.T) {
 }
 
 func TestIsExpired(t *testing.T) {
-	file := NewFile()
+	file := NewFile("", "", "")
 	isExpired := file.IsExpired()
 	if isExpired == true {
 		t.Errorf("ExpirationDate being unset should result in IsExpired returning false: ExpirationDate: %v, isExpired: %v", file.ExpirationDate, isExpired)

@@ -10,20 +10,28 @@ import (
 
 // File is a type representing a file in the vault.
 type File struct {
-	FileID         string    `json:"fileId" bson:"fileId"`
-	CreatedDate    time.Time `json:"createdDate" bson:"createdDate"`
-	StorageType    string    `json:"storageType" bson:"storageType"`
-	Name           string    `json:"name" bson:"name"`
-	MimeType       string    `json:"mimeType" bson:"mimeType"`
-	DeletedDate    time.Time `json:"dateDeleted,omitempty" bson:"dateDeleted,omitempty"`
-	ExpirationDate time.Time `json:"expirationDate,omitempty" bson:"expirationDate,omitempty"`
-	OwnerID        string    `json:"ownerId" bson:"ownerId"`
+	FileID         primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	FileToken      string             `json:"fileToken" bson:"fileToken"`
+	CreatedDate    time.Time          `json:"createdDate" bson:"createdDate"`
+	StorageType    string             `json:"storageType" bson:"storageType"`
+	Name           string             `json:"name" bson:"name"`
+	MimeType       string             `json:"mimeType" bson:"mimeType"`
+	DeletedDate    time.Time          `json:"dateDeleted,omitempty" bson:"dateDeleted,omitempty"`
+	ExpirationDate time.Time          `json:"expirationDate,omitempty" bson:"expirationDate,omitempty"`
+	OwnerID        string             `json:"ownerId" bson:"ownerId"`
 }
 
 // DBFile represents a file from the database
-type DBFile struct {
-	File `bson:",inline"`
-	DbID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+// type DBFile struct {
+// 	File `bson:",inline"`
+// 	DbID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+// }
+
+// SetFileExpirationError is an error that indicates that there was a problem setting a file as expired
+type SetFileExpirationError string
+
+func (sfve SetFileExpirationError) Error() string {
+	return string(sfve)
 }
 
 // ValidationError is an error that relays what about a file object made it invalid.
@@ -38,20 +46,28 @@ func (fve ValidationError) Error() string {
 }
 
 // NewFile returns a new File object
-func NewFile() *File {
+func NewFile(mimeType, name, ownerID string) *File {
 	return &File{
-		FileID:      uuid.NewV4().String(),
+		// FileID:      uuid.NewV4().String(),
 		CreatedDate: time.Now(),
+		FileToken:   uuid.NewV4().String(),
+		MimeType:    mimeType,
+		Name:        name,
+		OwnerID:     ownerID,
 	}
 }
 
 // Validate is a function that validates a File struct to make sure it has valid data.
-func (f *File) Validate() ValidationError {
+func (f *File) Validate() error {
 	errorMessages := make(map[string]string)
 
 	if f == nil {
 		errorMessages["General"] = "the file cannot be nil."
 		return ValidationError(errorMessages)
+	}
+
+	if f.FileToken == "" {
+		errorMessages["FileToken"] = fmt.Sprint("FileToken cannot be empty")
 	}
 
 	if f.MimeType == "" {
@@ -74,6 +90,20 @@ func (f *File) Validate() ValidationError {
 		return ValidationError(errorMessages)
 	}
 
+	return nil
+}
+
+// Delete sets the deleted date on a file.
+func (f *File) Delete() {
+	f.DeletedDate = time.Now()
+}
+
+// SetExpiration sets the expiration date on a file to the parameter
+func (f *File) SetExpiration(expirationDate time.Time) error {
+	if f.IsExpired() == true {
+		return SetFileExpirationError(fmt.Sprintf("%v - %v is already expired: current expiration date %v", f.FileID, f.Name, f.ExpirationDate))
+	}
+	f.ExpirationDate = expirationDate
 	return nil
 }
 

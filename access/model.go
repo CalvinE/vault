@@ -4,15 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Access this is a type representing access to files in the vault
 type Access struct {
 	AccessID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	FileToken         string             `json:"fileToken" bson:"fileToken"`
-	AccessToken       string             `json:"accessToken" bson:"accessToken"`
+	FileID            primitive.ObjectID `json:"fileId" bson:"fileId"`
 	Name              string             `json:"name,omitempty" bson:"name,omitempty"`
 	DisabledDate      time.Time          `json:"disabledDate,omitempty" bson:"disabledDate,omitempty"`
 	CreatedDate       time.Time          `json:"createdDate" bson:"createdDate"`
@@ -26,7 +24,8 @@ type Access struct {
 // Log is a type that represents the attempted use of an Access to get a file, successful or not.
 type Log struct {
 	LogID         primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	AccessToken   string             `json:"accessId" bson:"accessId"`
+	AccessID      primitive.ObjectID `json:"accessId" bson:"accessId"`
+	FileID        primitive.ObjectID `json:"fileId" bson:"fileId"`
 	ClientIP      string             `json:"clientIp" bson:"clientIp"`
 	FailureReason string             `json:"failureReason,omitempty" bson:"failureReason,omitempty"`
 	AttemptDate   time.Time          `json:"attemptDate" bson:"attemptDate"`
@@ -44,20 +43,22 @@ func (fve ValidationError) Error() string {
 }
 
 // NewAccess returns a new Access object
-func NewAccess(creatorID, fileToken string) *Access {
+func NewAccess(fileID primitive.ObjectID, creatorID string) *Access {
 	return &Access{
 		AccessCount: 0,
-		AccessToken: uuid.NewV4().String(),
+		// AccessToken: uuid.NewV4().String(),
 		CreatedDate: time.Now(),
 		CreatorID:   creatorID,
-		FileToken:   fileToken,
+		// FileToken:   fileToken,
+		FileID: fileID,
 	}
 }
 
 // NewLog returns a new Log object
-func NewLog(accessToken, clientIP, failureReason string) *Log {
+func NewLog(accessID, fileID primitive.ObjectID, clientIP, failureReason string) *Log {
 	return &Log{
-		AccessToken:   accessToken,
+		AccessID:      accessID,
+		FileID:        fileID,
 		ClientIP:      clientIP,
 		FailureReason: failureReason,
 		AttemptDate:   time.Now(),
@@ -67,22 +68,18 @@ func NewLog(accessToken, clientIP, failureReason string) *Log {
 // Validate is a function that validates an Access struct to make sure it has valid data.
 func (a *Access) Validate() error {
 	errorMessages := make(map[string]string)
-
+	emptyObjectID := primitive.ObjectID{}
 	if a == nil {
 		errorMessages["General"] = "the access cannot be nil."
 		return ValidationError(errorMessages)
-	}
-
-	if a.AccessToken == "" {
-		errorMessages["AccessToken"] = fmt.Sprint("AccessToken cannot be empty")
 	}
 
 	if a.CreatorID == "" {
 		errorMessages["CreatorID"] = fmt.Sprint("AccessToken cannot be empty")
 	}
 
-	if a.FileToken == "" {
-		errorMessages["FileToken"] = fmt.Sprint("FileToken cannot be empty")
+	if a.FileID == emptyObjectID {
+		errorMessages["FileID"] = fmt.Sprint("FileID cannot be empty")
 	}
 
 	if a.AccessCount < 0 {

@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // File is a type representing a file in the vault.
 type File struct {
 	FileID         primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	FileToken      string             `json:"fileToken" bson:"fileToken"`
 	CreatedDate    time.Time          `json:"createdDate" bson:"createdDate"`
 	StorageType    string             `json:"storageType" bson:"storageType"`
 	Name           string             `json:"name" bson:"name"`
@@ -20,12 +18,6 @@ type File struct {
 	ExpirationDate time.Time          `json:"expirationDate,omitempty" bson:"expirationDate,omitempty"`
 	OwnerID        string             `json:"ownerId" bson:"ownerId"`
 }
-
-// DBFile represents a file from the database
-// type DBFile struct {
-// 	File `bson:",inline"`
-// 	DbID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-// }
 
 // SetFileExpirationError is an error that indicates that there was a problem setting a file as expired
 type SetFileExpirationError string
@@ -46,14 +38,13 @@ func (fve ValidationError) Error() string {
 }
 
 // NewFile returns a new File object
-func NewFile(mimeType, name, ownerID string) *File {
+func NewFile(mimeType, name, ownerID, storageType string) *File {
 	return &File{
-		// FileID:      uuid.NewV4().String(),
 		CreatedDate: time.Now(),
-		FileToken:   uuid.NewV4().String(),
 		MimeType:    mimeType,
 		Name:        name,
 		OwnerID:     ownerID,
+		StorageType: storageType,
 	}
 }
 
@@ -64,10 +55,6 @@ func (f *File) Validate() error {
 	if f == nil {
 		errorMessages["General"] = "the file cannot be nil."
 		return ValidationError(errorMessages)
-	}
-
-	if f.FileToken == "" {
-		errorMessages["FileToken"] = fmt.Sprint("FileToken cannot be empty")
 	}
 
 	if f.MimeType == "" {

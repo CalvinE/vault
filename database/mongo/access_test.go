@@ -11,24 +11,25 @@ func TestAccessRepo(t *testing.T) {
 			t.Skip("Skipping AddAccess Test")
 		}
 		a.Name = accessName
-		newAccessToken, err := accessRepo.AddAccess(a)
+		newAccessID, err := accessRepo.AddAccess(a)
+		a.AccessID = newAccessID
 		if err != nil {
 			t.Errorf("an error occurred while adding the test access: %v\n", err)
 		} else {
-			fmt.Printf("new inserted access token: %v\n", newAccessToken)
+			fmt.Printf("new inserted accessID: %v\n", newAccessID)
 		}
 	})
 
-	t.Run("GetAccessByAccessToken", func(t *testing.T) {
+	t.Run("GetAccess", func(t *testing.T) {
 		if testing.Short() {
 			t.Skip("Skipping GetAccess Test")
 		}
-		access, err := accessRepo.GetAccessByAccessToken(a.AccessToken)
+		access, err := accessRepo.GetAccess(a.AccessID)
 		if err != nil {
 			t.Errorf("error occurred while getting access from database: %v", err)
 		}
-		if access.FileToken != f.FileToken {
-			t.Errorf("the access returned from the does not have the expected fileToken: got = %v expected: %v", access.FileToken, f.FileToken)
+		if access.FileID != f.FileID {
+			t.Errorf("the access returned from the does not have the expected FileID: got = %v expected: %v", access.FileID, f.FileID)
 		} else {
 			fmt.Printf("access retreived from database: id = %v, name = %v\n", access.AccessID, access.Name)
 		}

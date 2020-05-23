@@ -5,15 +5,13 @@ import (
 	"time"
 
 	uuid "github.com/satori/go.uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestNewAccess(t *testing.T) {
 	var creatorID = uuid.NewV4().String()
 	var unsetTime = time.Time{}
-	a := NewAccess(creatorID, uuid.NewV4().String())
-	if a.AccessToken == "" {
-		t.Error("newly created access token is empty.\n")
-	}
+	a := NewAccess(primitive.NewObjectID(), creatorID)
 	if a.AccessCount != 0 {
 		t.Error("newly created access AccessCount should initialize to 0.\n")
 	}
@@ -35,7 +33,7 @@ func TestVaildate(t *testing.T) {
 }
 
 func TestIsDisabled(t *testing.T) {
-	access := NewAccess(uuid.NewV4().String(), uuid.NewV4().String())
+	access := NewAccess(primitive.NewObjectID(), uuid.NewV4().String())
 	isDeleted := access.IsDisabled()
 	if isDeleted == true {
 		t.Errorf("file without DisabledDate set should return false got: %v\n", isDeleted)
@@ -49,7 +47,7 @@ func TestIsDisabled(t *testing.T) {
 }
 
 func TestIsExpired(t *testing.T) {
-	access := NewAccess(uuid.NewV4().String(), uuid.NewV4().String())
+	access := NewAccess(primitive.NewObjectID(), uuid.NewV4().String())
 	isExpired := access.IsExpired()
 	if isExpired == true {
 		t.Errorf("ExpirationDate being unset should result in IsExpired returning false: ExpirationDate: %v, isExpired: %v", access.ExpirationDate, isExpired)

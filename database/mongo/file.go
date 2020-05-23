@@ -6,6 +6,7 @@ import (
 	"calvinechols.com/vault/env"
 	"calvinechols.com/vault/file"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -24,26 +25,17 @@ func NewFileMongoRepo(connection *mongo.Client) file.Repo {
 	}
 }
 
-func (r *fileMongoRepo) AddFile(file *file.File) (string, error) {
-	_, err := r.connection.Database(r.dbName).Collection(r.collectionName).InsertOne(context.TODO(), file)
+func (r *fileMongoRepo) AddFile(file *file.File) (primitive.ObjectID, error) {
+	insertResult, err := r.connection.Database(r.dbName).Collection(r.collectionName).InsertOne(context.TODO(), file)
 	if err != nil {
-		return "", err
+		return primitive.NilObjectID, err
 	}
-	return file.FileToken, nil
+	return insertResult.InsertedID.(primitive.ObjectID), nil
 }
 
-// func (r *fileMongoRepo) GetFile(id primitive.ObjectID) (*file.File, error) {
-// 	var file *file.File
-// 	err := r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"_id": id}).Decode(&file)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return file, nil
-// }
-
-func (r *fileMongoRepo) GetFileByFileToken(fileToken string) (*file.File, error) {
+func (r *fileMongoRepo) GetFile(fileID primitive.ObjectID) (*file.File, error) {
 	var file *file.File
-	err := r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"fileToken": fileToken}).Decode(&file)
+	err := r.connection.Database(r.dbName).Collection(r.collectionName).FindOne(context.TODO(), bson.M{"_id": fileID}).Decode(&file)
 	if err != nil {
 		return nil, err
 	}

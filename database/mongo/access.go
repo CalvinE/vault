@@ -27,17 +27,17 @@ func NewAccessMongoRepo(connection *mongo.Client) access.Repo {
 	}
 }
 
-func (r *accessMongoRepo) AddAccess(access *access.Access) (string, error) {
-	_, err := r.connection.Database(r.dbName).Collection(r.accessCollectionName).InsertOne(context.TODO(), access)
+func (r *accessMongoRepo) AddAccess(access *access.Access) (primitive.ObjectID, error) {
+	insertResult, err := r.connection.Database(r.dbName).Collection(r.accessCollectionName).InsertOne(context.TODO(), access)
 	if err != nil {
-		return "", err
+		return primitive.NilObjectID, err
 	}
-	return access.AccessToken, nil
+	return insertResult.InsertedID.(primitive.ObjectID), nil
 }
 
-func (r *accessMongoRepo) GetAccessByAccessToken(accessToken string) (*access.Access, error) {
+func (r *accessMongoRepo) GetAccess(accessID primitive.ObjectID) (*access.Access, error) {
 	var access *access.Access
-	err := r.connection.Database(r.dbName).Collection(r.accessCollectionName).FindOne(context.TODO(), bson.M{"accessToken": accessToken}).Decode(&access)
+	err := r.connection.Database(r.dbName).Collection(r.accessCollectionName).FindOne(context.TODO(), bson.M{"_id": accessID}).Decode(&access)
 	if err != nil {
 		return nil, err
 	}
@@ -47,14 +47,14 @@ func (r *accessMongoRepo) GetAccessByAccessToken(accessToken string) (*access.Ac
 func (r *accessMongoRepo) AddLog(log *access.Log) (primitive.ObjectID, error) {
 	insertResult, err := r.connection.Database(r.dbName).Collection(r.logCollectionName).InsertOne(context.TODO(), log)
 	if err != nil {
-		return primitive.ObjectID{}, err
+		return primitive.NilObjectID, err
 	}
 	return insertResult.InsertedID.(primitive.ObjectID), nil
 }
 
-func (r *accessMongoRepo) GetLogsByAccessToken(accessToken string) ([]access.Log, error) {
+func (r *accessMongoRepo) GetLogsByAccessID(accessID primitive.ObjectID) ([]access.Log, error) {
 	var logs []access.Log
-	findResult, err := r.connection.Database(r.dbName).Collection(r.logCollectionName).Find(context.TODO(), bson.M{"accessToken": accessToken})
+	findResult, err := r.connection.Database(r.dbName).Collection(r.logCollectionName).Find(context.TODO(), bson.M{"accessId": accessID})
 	if err != nil {
 		return nil, err
 	}
@@ -67,20 +67,7 @@ func (r *accessMongoRepo) GetLogsByAccessToken(accessToken string) ([]access.Log
 
 func (r *accessMongoRepo) GetLogsByFileID(fileID primitive.ObjectID) ([]access.Log, error) {
 	var logs []access.Log
-	findResult, err := r.connection.Database(r.dbName).Collection(r.logCollectionName).Aggregate(context.TODO(), bson.D{})
-	if err != nil {
-		return nil, err
-	}
-	err = findResult.All(context.TODO(), &logs)
-	if err != nil {
-		return nil, err
-	}
-	return logs, nil
-}
-
-func (r *accessMongoRepo) GetLogsByFileToken(fileToken string) ([]access.Log, error) {
-	var logs []access.Log
-	findResult, err := r.connection.Database(r.dbName).Collection(r.logCollectionName).Aggregate(context.TODO(), bson.D{})
+	findResult, err := r.connection.Database(r.dbName).Collection(r.logCollectionName).Aggregate(context.TODO(), bson.M{"fileId": fileID})
 	if err != nil {
 		return nil, err
 	}

@@ -6,12 +6,11 @@ import (
 )
 
 func TestFileRepo(t *testing.T) {
-	// f := file.NewFile(fileMimeType, fileName, ownerID)
+	if testing.Short() {
+		t.Skip("Skipping Mongo File Tests")
+	}
 
 	t.Run("AddFile", func(t *testing.T) {
-		if testing.Short() {
-			t.Skip("Skipping AddFile Test")
-		}
 		newFileID, err := fileRepo.AddFile(f)
 		if err != nil {
 			t.Errorf("an error occurred while adding the test file: %v\n", err)
@@ -21,9 +20,6 @@ func TestFileRepo(t *testing.T) {
 	})
 
 	t.Run("GetFile", func(t *testing.T) {
-		if testing.Short() {
-			t.Skip("Skipping TestGetFile")
-		}
 		file, err := fileRepo.GetFile(f.FileID)
 		if err != nil {
 			t.Errorf("error occurred while getting file from database: %v", err)

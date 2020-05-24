@@ -27,6 +27,7 @@ func (r *fileStoreDiskRepo) ReadFile(name string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 	fi, err := f.Stat()
 	if err != nil {
 		return nil, err
@@ -49,6 +50,7 @@ func (r *fileStoreDiskRepo) CreateFile(name string, data []byte) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	_, err = f.Write(data)
 	if err != nil {
 		return err

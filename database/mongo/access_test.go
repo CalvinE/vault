@@ -6,10 +6,11 @@ import (
 )
 
 func TestAccessRepo(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping Mongo Access Tests")
+	}
+
 	t.Run("AddAccess", func(t *testing.T) {
-		if testing.Short() {
-			t.Skip("Skipping AddAccess Test")
-		}
 		a.Name = accessName
 		newAccessID, err := accessRepo.AddAccess(a)
 		a.AccessID = newAccessID
@@ -21,9 +22,6 @@ func TestAccessRepo(t *testing.T) {
 	})
 
 	t.Run("GetAccess", func(t *testing.T) {
-		if testing.Short() {
-			t.Skip("Skipping GetAccess Test")
-		}
 		access, err := accessRepo.GetAccess(a.AccessID)
 		if err != nil {
 			t.Errorf("error occurred while getting access from database: %v", err)

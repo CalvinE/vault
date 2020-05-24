@@ -1,6 +1,7 @@
 package file
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -42,5 +43,5 @@ func (h *handler) PutFile(w http.ResponseWriter, r *http.Request) {
 		// handle error
 		return
 	}
-	// TODO: finish handling the file
+	fmt.Printf("%v", newFileName)
 }

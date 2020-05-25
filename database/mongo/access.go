@@ -32,7 +32,8 @@ func (r *accessMongoRepo) AddAccess(access *access.Access) (primitive.ObjectID, 
 	if err != nil {
 		return primitive.NilObjectID, err
 	}
-	return insertResult.InsertedID.(primitive.ObjectID), nil
+	access.AccessID = insertResult.InsertedID.(primitive.ObjectID)
+	return access.AccessID, nil
 }
 
 func (r *accessMongoRepo) GetAccess(accessID primitive.ObjectID) (*access.Access, error) {

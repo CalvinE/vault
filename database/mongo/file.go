@@ -30,7 +30,8 @@ func (r *fileMongoRepo) AddFile(file *file.File) (primitive.ObjectID, error) {
 	if err != nil {
 		return primitive.NilObjectID, err
 	}
-	return insertResult.InsertedID.(primitive.ObjectID), nil
+	file.FileID = insertResult.InsertedID.(primitive.ObjectID)
+	return file.FileID, nil
 }
 
 func (r *fileMongoRepo) GetFile(fileID primitive.ObjectID) (*file.File, error) {

@@ -5,13 +5,13 @@ import (
 )
 
 var (
-	testFile      = "C:/Users/calvi/go/src/calvinechols.com/vault/go.mod"
-	testWriteFile = "C:/Users/calvi/test/tempfile.txt"
+	testFile      = "go.mod"
+	testWriteFile = "tempfile.txt"
 	testData      = "This is a test string."
 )
 
 func TestCreateFile(t *testing.T) {
-	fsrepo := NewFileStoreDiskRepo()
+	fsrepo := NewFileStoreDiskRepo("C:/Users/calvi/test/")
 	err := fsrepo.CreateFile(testWriteFile, []byte(testData))
 	if err != nil {
 		t.Errorf("Error occurred while writing file %s: %v", testWriteFile, testData)
@@ -19,7 +19,7 @@ func TestCreateFile(t *testing.T) {
 }
 
 func TestReadFile(t *testing.T) {
-	fsrepo := NewFileStoreDiskRepo()
+	fsrepo := NewFileStoreDiskRepo("C:/Users/calvi/go/src/calvinechols.com/vault/")
 	_, err := fsrepo.ReadFile(testFile)
 	if err != nil {
 		t.Errorf("Error occurred reading file from %s: %v", testFile, err)
@@ -27,7 +27,7 @@ func TestReadFile(t *testing.T) {
 }
 
 func TestGetFileHandle(t *testing.T) {
-	fsrepo := NewFileStoreDiskRepo()
+	fsrepo := NewFileStoreDiskRepo("C:/Users/calvi/go/src/calvinechols.com/vault/")
 	_, err := fsrepo.GetFileHandle(testFile)
 	if err != nil {
 		t.Errorf("Error occurred getting file handler: %v", err)

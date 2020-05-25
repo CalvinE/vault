@@ -2,19 +2,25 @@ package disk
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 
 	"calvinechols.com/vault/filestore"
 )
 
-type fileStoreDiskRepo struct{}
+type fileStoreDiskRepo struct {
+	savePath string
+}
 
 // NewFileStoreDiskRepo returns a new instance of the file storage disk repo.
-func NewFileStoreDiskRepo() filestore.Repo {
-	return &fileStoreDiskRepo{}
+func NewFileStoreDiskRepo(savePath string) filestore.Repo {
+	return &fileStoreDiskRepo{
+		savePath: savePath,
+	}
 }
 
 func (r *fileStoreDiskRepo) GetFileHandle(name string) (*os.File, error) {
+	name = path.Join(r.savePath, name)
 	f, err := os.Open(name)
 	if err != nil {
 		return nil, err
@@ -23,6 +29,7 @@ func (r *fileStoreDiskRepo) GetFileHandle(name string) (*os.File, error) {
 }
 
 func (r *fileStoreDiskRepo) ReadFile(name string) ([]byte, error) {
+	name = path.Join(r.savePath, name)
 	f, err := os.Open(name)
 	if err != nil {
 		return nil, err
@@ -41,6 +48,7 @@ func (r *fileStoreDiskRepo) ReadFile(name string) ([]byte, error) {
 }
 
 func (r *fileStoreDiskRepo) CreateFile(name string, data []byte) error {
+	name = path.Join(r.savePath, name)
 	filePath := filepath.Dir(name)
 	err := os.MkdirAll(filePath, os.ModePerm)
 	if err != nil {

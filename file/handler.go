@@ -1,7 +1,9 @@
 package file
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -43,5 +45,20 @@ func (h *handler) PutFile(w http.ResponseWriter, r *http.Request) {
 		// handle error
 		return
 	}
-	fmt.Printf("%v", newFileName)
+	mimeType := http.DetectContentType(fileData)
+	ownerID := r.FormValue("ownerid")
+	f := NewFile(mimeType, newFileName, handler.Filename, ownerID, "disk")
+	newFileID, err := h.Service.AddFile(f)
+	if err != nil {
+		log.Fatalf("failed to insert new fiel record... orphaned file saved to disk with name: %v - %v", newFileName, err)
+		// handle errpr
+	}
+	// remove the internal name because its none of their business!
+	f.InternalFileName = ""
+	fmt.Printf("insertedFileID: %v", newFileID)
+	jsonFile, err := json.Marshal(f)
+	if err != nil {
+		log.Fatalf("convert file to json failed: %v", err)
+	}
+	w.Write(jsonFile)
 }

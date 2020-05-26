@@ -30,6 +30,7 @@ func main() {
 		return
 	}
 	mux := mux.NewRouter().StrictSlash(true)
+	mux.HandleFunc("/getfile", userHandler.GetFile).Methods("GET", "OPTIONS")
 	mux.HandleFunc("/putfile", userHandler.PutFile).Methods("POST", "OPTIONS")
 
 	http.Handle("/", accessControl(mux))

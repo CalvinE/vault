@@ -10,12 +10,11 @@ import (
 
 func TestNewAccess(t *testing.T) {
 	var creatorID = uuid.NewV4().String()
-	var unsetTime = time.Time{}
 	a := NewAccess(primitive.NewObjectID(), creatorID)
 	if a.AccessCount != 0 {
 		t.Error("newly created access AccessCount should initialize to 0.\n")
 	}
-	if a.CreatedDate == unsetTime {
+	if a.CreatedDate == nil {
 		t.Error("newly created access CreatedDate to be initialized to the time the access object is instantiated.\n")
 	}
 	if a.CreatorID != creatorID {
@@ -38,7 +37,8 @@ func TestIsDisabled(t *testing.T) {
 	if isDeleted == true {
 		t.Errorf("file without DisabledDate set should return false got: %v\n", isDeleted)
 	}
-	access.DisabledDate = time.Now()
+	now := time.Now()
+	access.DisabledDate = &now
 	isDeleted = access.IsDisabled()
 	if isDeleted == false {
 		t.Errorf("file with DisabledDate set should return true got: %v\n", isDeleted)
@@ -52,12 +52,15 @@ func TestIsExpired(t *testing.T) {
 	if isExpired == true {
 		t.Errorf("ExpirationDate being unset should result in IsExpired returning false: ExpirationDate: %v, isExpired: %v", access.ExpirationDate, isExpired)
 	}
-	access.ExpirationDate = time.Now().Add(-10000)
+	now := time.Now()
+	pastExp := now.Add(-10000)
+	futureExp := now.Add(100)
+	access.ExpirationDate = &pastExp
 	isExpired = access.IsExpired()
 	if isExpired == false {
 		t.Errorf("ExpirationDate in the past should result in IsExpired returning true: ExpirationDate: %v, isExpired: %v\n", access.ExpirationDate, isExpired)
 	}
-	access.ExpirationDate = time.Now().Add(100)
+	access.ExpirationDate = &futureExp
 	isExpired = access.IsExpired()
 	if isExpired == true {
 		t.Errorf("ExpirationDate in the future should result in IsExpired returning false: ExpirationDate: %v, isExpired: %v", access.ExpirationDate, isExpired)

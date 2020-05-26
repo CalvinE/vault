@@ -12,9 +12,9 @@ type Access struct {
 	AccessID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	FileID            primitive.ObjectID `json:"fileId" bson:"fileId"`
 	Name              string             `json:"name,omitempty" bson:"name,omitempty"`
-	DisabledDate      time.Time          `json:"disabledDate,omitempty" bson:"disabledDate,omitempty"`
-	CreatedDate       time.Time          `json:"createdDate" bson:"createdDate"`
-	ExpirationDate    time.Time          `json:"expirationDate,omitempty" bson:"expirationDate,omitempty"`
+	DisabledDate      *time.Time         `json:"disabledDate,omitempty" bson:"disabledDate,omitempty"`
+	CreatedDate       *time.Time         `json:"createdDate" bson:"createdDate"`
+	ExpirationDate    *time.Time         `json:"expirationDate,omitempty" bson:"expirationDate,omitempty"`
 	AllowAnonymous    bool               `json:"allowAnonymous" bson:"allowAnonymous"`
 	AnonymousPassword string             `json:"anonymousPassword,omitempty" bson:"anonymousPassword,omitempty"`
 	AccessCount       int64              `json:"accessCount" bson:"accessCount"`
@@ -28,8 +28,11 @@ type Log struct {
 	FileID        primitive.ObjectID `json:"fileId" bson:"fileId"`
 	ClientIP      string             `json:"clientIp" bson:"clientIp"`
 	FailureReason string             `json:"failureReason,omitempty" bson:"failureReason,omitempty"`
-	AttemptDate   time.Time          `json:"attemptDate" bson:"attemptDate"`
+	AttemptDate   *time.Time         `json:"attemptDate" bson:"attemptDate"`
 }
+
+// type AccessRequest struct {
+// }
 
 // ValidationError is an error that relays what about a access object made it invalid.
 type ValidationError map[string]string
@@ -44,10 +47,11 @@ func (fve ValidationError) Error() string {
 
 // NewAccess returns a new Access object
 func NewAccess(fileID primitive.ObjectID, creatorID string) *Access {
+	now := time.Now()
 	return &Access{
 		AccessCount: 0,
 		// AccessToken: uuid.NewV4().String(),
-		CreatedDate: time.Now(),
+		CreatedDate: &now,
 		CreatorID:   creatorID,
 		// FileToken:   fileToken,
 		FileID: fileID,
@@ -56,12 +60,13 @@ func NewAccess(fileID primitive.ObjectID, creatorID string) *Access {
 
 // NewLog returns a new Log object
 func NewLog(accessID, fileID primitive.ObjectID, clientIP, failureReason string) *Log {
+	now := time.Now()
 	return &Log{
 		AccessID:      accessID,
 		FileID:        fileID,
 		ClientIP:      clientIP,
 		FailureReason: failureReason,
-		AttemptDate:   time.Now(),
+		AttemptDate:   &now,
 	}
 }
 
@@ -91,18 +96,16 @@ func (a *Access) Validate() error {
 
 // IsDisabled returns true if the access' DisabledDate is set.
 func (a *Access) IsDisabled() bool {
-	unsetTime := time.Time{}
-	wasDeleted := a.DisabledDate != unsetTime
+	wasDeleted := a.DisabledDate != nil
 	return wasDeleted
 }
 
 // IsExpired returns true if the file has an expiration data and it is after the current time.
 func (a *Access) IsExpired() bool {
-	unsetTime := time.Time{}
-	hasExpirationDate := a.ExpirationDate != unsetTime
+	hasExpirationDate := a.ExpirationDate != nil
 	if hasExpirationDate == true {
 		now := time.Now()
-		isExpired := now.After(a.ExpirationDate)
+		isExpired := now.After(*a.ExpirationDate)
 		return isExpired
 	}
 	return hasExpirationDate

@@ -13,7 +13,7 @@ func TestAccessRepo(t *testing.T) {
 	t.Run("AddAccess", func(t *testing.T) {
 		a.Name = accessName
 		newAccessID, err := accessRepo.AddAccess(a)
-		a.AccessID = newAccessID
+		a.AccessID = *newAccessID
 		if err != nil {
 			t.Errorf("an error occurred while adding the test access: %v\n", err)
 		} else {
@@ -22,7 +22,7 @@ func TestAccessRepo(t *testing.T) {
 	})
 
 	t.Run("GetAccess", func(t *testing.T) {
-		access, err := accessRepo.GetAccess(a.AccessID)
+		access, err := accessRepo.GetAccess(&a.AccessID)
 		if err != nil {
 			t.Errorf("error occurred while getting access from database: %v", err)
 		}

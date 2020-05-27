@@ -21,6 +21,8 @@ var fileMimeType = "plain/text"
 var internalFileName = uuid.NewV4().String()
 var fileName = "test_file.txt"
 var fileRepo file.Repo
+var storageType = "disk"
+var fileSize int64 = 14
 
 var a *access.Access
 var accessName = "test-access"
@@ -31,7 +33,7 @@ var ownerID = uuid.NewV4().String()
 // TestMainFile is the test function for this file. its in test main because the testAddFile func needs to run before testGetFile func.
 func TestMain(m *testing.M) {
 	options := options.Client().ApplyURI(mongoConnectionString)
-	f = file.NewFile(fileMimeType, internalFileName, fileName, ownerID, "disk")
+	f = file.NewFile(fileMimeType, internalFileName, fileName, ownerID, storageType, fileSize)
 	f.FileID = primitive.NewObjectID()
 	a = access.NewAccess(f.FileID, ownerID)
 	client, _ := mongo.Connect(context.TODO(), options)

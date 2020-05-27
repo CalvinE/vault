@@ -7,7 +7,8 @@ import (
 
 func TestNewFile(t *testing.T) {
 	mimeType, fileName, ownerID, storageType, internalFileName := "test1", "test2", "test3", "test4", "test5"
-	f := NewFile(mimeType, internalFileName, fileName, ownerID, storageType)
+	var fileSize int64 = 13
+	f := NewFile(mimeType, internalFileName, fileName, ownerID, storageType, fileSize)
 	if f.MimeType != mimeType {
 		t.Errorf("MimeType is wrong: got: %v - expected: %v", f.MimeType, mimeType)
 	}
@@ -26,6 +27,9 @@ func TestNewFile(t *testing.T) {
 	if f.InternalFileName != internalFileName {
 		t.Errorf("InternalFileName is wrong: got: %v - expected: %v", f.InternalFileName, internalFileName)
 	}
+	if f.FileSize != fileSize {
+		t.Errorf("FileSize is wrong: got: %v - expected: %v", f.FileSize, fileSize)
+	}
 }
 
 func TestValidate(t *testing.T) {
@@ -38,7 +42,7 @@ func TestValidate(t *testing.T) {
 }
 
 func TestIsDeleted(t *testing.T) {
-	file := NewFile("", "", "", "", "")
+	file := NewFile("", "", "", "", "", 0)
 	isDeleted := file.IsDeleted()
 	if isDeleted == true {
 		t.Errorf("file without DeletedDate set should return false got: %v\n", isDeleted)
@@ -52,7 +56,7 @@ func TestIsDeleted(t *testing.T) {
 }
 
 func TestIsExpired(t *testing.T) {
-	file := NewFile("", "", "", "", "")
+	file := NewFile("", "", "", "", "", 0)
 	isExpired := file.IsExpired()
 	if isExpired == true {
 		t.Errorf("ExpirationDate being unset should result in IsExpired returning false: ExpirationDate: %v, isExpired: %v", file.ExpirationDate, isExpired)

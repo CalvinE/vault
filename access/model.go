@@ -31,9 +31,6 @@ type Log struct {
 	AttemptDate   *time.Time         `json:"attemptDate" bson:"attemptDate"`
 }
 
-// type AccessRequest struct {
-// }
-
 // ValidationError is an error that relays what about a access object made it invalid.
 type ValidationError map[string]string
 

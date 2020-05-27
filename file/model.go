@@ -15,6 +15,7 @@ type File struct {
 	InternalFileName string             `json:"internalFileName" bson:"internalFileName"`
 	Name             string             `json:"name" bson:"name"`
 	MimeType         string             `json:"mimeType" bson:"mimeType"`
+	FileSize         int64              `json:"fileSize" bson:"fileSize"`
 	DeletedDate      *time.Time         `json:"dateDeleted,omitempty" bson:"dateDeleted,omitempty"`
 	ExpirationDate   *time.Time         `json:"expirationDate,omitempty" bson:"expirationDate,omitempty"`
 	OwnerID          string             `json:"ownerId" bson:"ownerId"`
@@ -39,7 +40,7 @@ func (fve ValidationError) Error() string {
 }
 
 // NewFile returns a new File object
-func NewFile(mimeType, internalFileName, name, ownerID, storageType string) *File {
+func NewFile(mimeType, internalFileName, name, ownerID, storageType string, fileSize int64) *File {
 	now := time.Now()
 	return &File{
 		CreatedDate:      &now,
@@ -48,6 +49,7 @@ func NewFile(mimeType, internalFileName, name, ownerID, storageType string) *Fil
 		Name:             name,
 		OwnerID:          ownerID,
 		StorageType:      storageType,
+		FileSize:         fileSize,
 	}
 }
 

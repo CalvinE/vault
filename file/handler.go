@@ -7,8 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Handler interface {
@@ -30,6 +28,7 @@ func NewFileHandler(fileService Service, maxFileSizeBytes int64) Handler {
 }
 
 func (h *handler) GetFile(w http.ResponseWriter, r *http.Request) {
+	// TODO: move some of this code to the service... business logic should be in service not handler...
 	fileidQuery, ok := r.URL.Query()["fileid"]
 	if !ok || len(fileidQuery[0]) < 1 {
 		// bad request, no fileid provided
@@ -47,46 +46,30 @@ func (h *handler) GetFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileIDString := fileidQuery[0]
-	fileID, err := primitive.ObjectIDFromHex(fileIDString)
-	if err != nil {
-		// fileid is invalid
-		log.Printf("file id provided is invalid: %v\n", fileIDString)
-	}
 	ownerID := owneridQuery[0]
-	file, err := h.Service.GetFile(fileID)
+	file, fileHandler, err := h.Service.RetreiveFile(fileIDString, ownerID)
 	if err != nil {
-		// error occurred while pulling file record
-		log.Printf("An error occurred while pulling file record: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		// TODO figure this stuff out... how to use errors.Is and errors.As...
+		if err.Error() == "unauthorized attempt" {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
-	if file.OwnerID == ownerID {
-		fileHandler, err := h.Service.GetFileHandleFromStorage(file.InternalFileName)
-		defer fileHandler.Close()
-		if err != nil {
-			// error getting file from disk...
-			log.Printf("error getting file from storage provider: %v - %+v\n", err, file)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		stat, err := fileHandler.Stat()
-		if err != nil {
-			// error getting stats on file from disk
-			log.Printf("error gettings stats on file: %v - %+v\n", err, file)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		var dataLen = stat.Size()
-		fileLenStr := strconv.FormatInt(dataLen, 10)
-		w.Header().Set("Content-Disposition", "attachment; filename="+file.Name)
-		w.Header().Set("Content-Type", file.MimeType)
-		w.Header().Set("Content-Length", fileLenStr)
-		io.Copy(w, fileHandler)
+	defer fileHandler.Close()
+	if err != nil {
+		// error getting file from disk...
+		errMsg := fmt.Sprintf("error getting file from storage provider: %v - %+v", err, file)
+		log.Println(errMsg)
+		http.Error(w, errMsg, http.StatusInternalServerError)
 		return
 	}
-	// person requesting file is not the owner...
-	w.WriteHeader(http.StatusUnauthorized)
-
+	fileLenStr := strconv.FormatInt(file.FileSize, 10)
+	w.Header().Set("Content-Disposition", "attachment; filename="+file.Name)
+	w.Header().Set("Content-Type", file.MimeType)
+	w.Header().Set("Content-Length", fileLenStr)
+	io.Copy(w, fileHandler)
 }
 
 func (h *handler) PutFile(w http.ResponseWriter, r *http.Request) {
@@ -113,9 +96,10 @@ func (h *handler) PutFile(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	// TODO try to make map of file extensions to mime types for this, also potentially allow users to specify mime type...
 	mimeType := http.DetectContentType(fileData)
 	ownerID := r.FormValue("ownerid")
-	f := NewFile(mimeType, newFileName, handler.Filename, ownerID, "disk")
+	f := NewFile(mimeType, newFileName, handler.Filename, ownerID, "disk", fileLength)
 	newFileID, err := h.Service.AddFile(f)
 	if err != nil {
 		log.Fatalf("failed to insert new fili record... orphaned file saved to disk with name: %v - %v", newFileName, err)

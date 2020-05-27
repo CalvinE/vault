@@ -1,6 +1,7 @@
 package file
 
 import (
+	"errors"
 	"os"
 
 	"calvinechols.com/vault/filestore"
@@ -15,6 +16,7 @@ type Service interface {
 	GetFileFromStorage(name string) ([]byte, error)
 	GetFileHandleFromStorage(name string) (*os.File, error)
 	GetFile(fileID primitive.ObjectID) (*File, error)
+	RetreiveFile(fileIDString, ownerID string) (*File, *os.File, error)
 }
 
 type service struct {
@@ -73,4 +75,23 @@ func (s *service) GetFile(fileID primitive.ObjectID) (*File, error) {
 		return nil, err
 	}
 	return file, nil
+}
+
+func (s *service) RetreiveFile(fileIDString, ownerID string) (*File, *os.File, error) {
+	fileID, err := primitive.ObjectIDFromHex(fileIDString)
+	if err != nil {
+		return nil, nil, err
+	}
+	f, err := s.GetFile(fileID)
+	if err != nil {
+		return nil, nil, err
+	}
+	if f.OwnerID == ownerID {
+		fileHandler, err := s.GetFileHandleFromStorage(f.InternalFileName)
+		if err != nil {
+			return nil, nil, err
+		}
+		return f, fileHandler, nil
+	}
+	return nil, nil, errors.New("unauthorized attempt")
 }

@@ -2,6 +2,8 @@ package mongo
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"calvinechols.com/vault/access"
 	"calvinechols.com/vault/env"
@@ -43,6 +45,31 @@ func (r *accessMongoRepo) GetAccess(accessID *primitive.ObjectID) (*access.Acces
 		return nil, err
 	}
 	return access, nil
+}
+
+func (r *accessMongoRepo) DisableAccess(accessID *primitive.ObjectID) error {
+	now := time.Now()
+	updateResult, err := r.connection.Database(r.dbName).Collection(r.accessCollectionName).UpdateOne(context.TODO(), bson.M{"_id": accessID}, bson.M{"$set": bson.M{"DisabledDate": now}})
+	if err != nil {
+		return err
+	}
+	if updateResult.ModifiedCount != 1 {
+		return fmt.Errorf("No access record found with id: %v", accessID)
+	}
+	return nil
+}
+
+func (r *accessMongoRepo) GetAllAccessesForFileID(fileID *primitive.ObjectID) ([]access.Access, error) {
+	var accesses []access.Access
+	findResult, err := r.connection.Database(r.dbName).Collection(r.accessCollectionName).Find(context.TODO(), bson.M{"fileId": fileID})
+	if err != nil {
+		return nil, err
+	}
+	err = findResult.All(context.TODO(), accesses)
+	if err != nil {
+		return nil, err
+	}
+	return accesses, nil
 }
 
 func (r *accessMongoRepo) AddLog(log *access.Log) (*primitive.ObjectID, error) {

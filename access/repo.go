@@ -8,6 +8,10 @@ type Repo interface {
 	AddAccess(access *Access) (*primitive.ObjectID, error)
 	// GetAccess returns an access record from the database given the accessID
 	GetAccess(accessID *primitive.ObjectID) (*Access, error)
+	// GetAllAccessesForFileID returns all access records for a given file id
+	GetAllAccessesForFileID(fileID *primitive.ObjectID, ownerID string) ([]Access, error)
+	// DisableAccess disables an access given the accessID
+	DisableAccess(accessID *primitive.ObjectID) error
 	// AddLog
 	AddLog(log *Log) (*primitive.ObjectID, error)
 	// GetLogsByAccessID returns the access logs for a given AccessID

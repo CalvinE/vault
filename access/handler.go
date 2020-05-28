@@ -10,6 +10,7 @@ import (
 // Handler is the http handler interface for access records
 type Handler interface {
 	AddAccess(w http.ResponseWriter, r *http.Request)
+	GetAllAccessesForFileID(w http.ResponseWriter, r *http.Request)
 	AccessFile(w http.ResponseWriter, r *http.Request)
 }
 
@@ -35,6 +36,10 @@ func (h *handler) AddAccess(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handler) AccessFile(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetAllAccessesForFileID(w http.ResponseWriter, r *http.Request) {
+	// TODO implement...
+}
 
+func (h *handler) AccessFile(w http.ResponseWriter, r *http.Request) {
+	// TODO implement...
 }

@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Service is a conduit to access use cases related to access and access log records.
 type Service interface {
 	AddAccess(access *Access) (*primitive.ObjectID, error)
 	GetAccess(accessID *primitive.ObjectID) (*Access, error)
@@ -17,6 +18,7 @@ type service struct {
 	DBRepo Repo
 }
 
+// ValidateAccessError is an error indicating that access validationhas failed.
 type ValidateAccessError struct {
 	AccessID string
 	Message  string
@@ -26,6 +28,7 @@ func (vae ValidateAccessError) Error() string {
 	return fmt.Sprintf("Validation of access %v failed with: %v", vae.AccessID, vae.Message)
 }
 
+// NewAccessService returns a new access service
 func NewAccessService(accessRepo Repo) Service {
 	return &service{
 		DBRepo: accessRepo,
@@ -84,10 +87,9 @@ func (s *service) ValidateAccess(accessIDString, password, userID string) (*prim
 				AccessID: accessIDString,
 				Message:  "access password did not match",
 			}
-		} else {
-			// anonymous access without password is allowed
-			return &access.FileID, nil
 		}
+		// anonymous access without password is allowed
+		return &access.FileID, nil
 	}
 	return nil, ValidateAccessError{
 		AccessID: accessIDString,

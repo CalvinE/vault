@@ -1,6 +1,8 @@
 package disk
 
 import (
+	"fmt"
+	"os"
 	"testing"
 )
 
@@ -19,7 +21,11 @@ func TestCreateFile(t *testing.T) {
 }
 
 func TestReadFile(t *testing.T) {
-	fsrepo := NewFileStoreDiskRepo("C:/Users/calvi/go/src/calvinechols.com/vault/")
+	workingDir, _ := os.Getwd()
+	t.Log("workingDir=", workingDir)
+	targetDir := fmt.Sprintf("%s%s..%s..", workingDir, string(os.PathSeparator), string(os.PathSeparator))
+	t.Log("targetDir=", targetDir)
+	fsrepo := NewFileStoreDiskRepo(targetDir) //("C:/Users/calvi/go/src/calvinechols.com/vault/")
 	_, err := fsrepo.ReadFile(testFile)
 	if err != nil {
 		t.Errorf("Error occurred reading file from %s: %v", testFile, err)
@@ -27,7 +33,11 @@ func TestReadFile(t *testing.T) {
 }
 
 func TestGetFileHandle(t *testing.T) {
-	fsrepo := NewFileStoreDiskRepo("C:/Users/calvi/go/src/calvinechols.com/vault/")
+	workingDir, _ := os.Getwd()
+	t.Log("workingDir=", workingDir)
+	targetDir := fmt.Sprintf("%s%s..%s..", workingDir, string(os.PathSeparator), string(os.PathSeparator))
+	t.Log("targetDir=", targetDir)
+	fsrepo := NewFileStoreDiskRepo(targetDir) //("C:/Users/calvi/go/src/calvinechols.com/vault/")
 	_, err := fsrepo.GetFileHandle(testFile)
 	if err != nil {
 		t.Errorf("Error occurred getting file handler: %v", err)

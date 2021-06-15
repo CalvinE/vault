@@ -52,14 +52,13 @@ func TestIsExpired(t *testing.T) {
 	if isExpired == true {
 		t.Errorf("ExpirationDate being unset should result in IsExpired returning false: ExpirationDate: %v, isExpired: %v", access.ExpirationDate, isExpired)
 	}
-	now := time.Now()
-	pastExp := now.Add(-10000)
-	futureExp := now.Add(100)
+	pastExp := time.Now().Add(time.Minute * -1)
 	access.ExpirationDate = &pastExp
 	isExpired = access.IsExpired()
 	if isExpired == false {
 		t.Errorf("ExpirationDate in the past should result in IsExpired returning true: ExpirationDate: %v, isExpired: %v\n", access.ExpirationDate, isExpired)
 	}
+	futureExp := time.Now().Add(time.Minute * 1)
 	access.ExpirationDate = &futureExp
 	isExpired = access.IsExpired()
 	if isExpired == true {

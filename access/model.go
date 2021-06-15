@@ -77,15 +77,15 @@ func (a *Access) Validate() error {
 	}
 
 	if a.CreatorID == "" {
-		errorMessages["CreatorID"] = fmt.Sprint("AccessToken cannot be empty")
+		errorMessages["CreatorID"] = "AccessToken cannot be empty"
 	}
 
 	if a.FileID == emptyObjectID {
-		errorMessages["FileID"] = fmt.Sprint("FileID cannot be empty")
+		errorMessages["FileID"] = "FileID cannot be empty"
 	}
 
 	if a.AccessCount < 0 {
-		errorMessages["AccessCount"] = fmt.Sprint("AccessCount must be greater than or equal to 0")
+		errorMessages["AccessCount"] = "AccessCount must be greater than or equal to 0"
 	}
 
 	return ValidationError(errorMessages)
@@ -100,7 +100,7 @@ func (a *Access) IsDisabled() bool {
 // IsExpired returns true if the file has an expiration data and it is after the current time.
 func (a *Access) IsExpired() bool {
 	hasExpirationDate := a.ExpirationDate != nil
-	if hasExpirationDate == true {
+	if hasExpirationDate {
 		now := time.Now()
 		isExpired := now.After(*a.ExpirationDate)
 		return isExpired

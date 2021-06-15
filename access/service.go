@@ -60,14 +60,14 @@ func (s *service) ValidateAccess(accessIDString, password, userID string) (*prim
 	if err != nil {
 		return nil, err
 	}
-	if access.IsDisabled() == true {
+	if access.IsDisabled() {
 		// the access has been disabled
 		return nil, ValidateAccessError{
 			AccessID: accessIDString,
 			Message:  "the access has been disabled",
 		}
 	}
-	if access.IsExpired() == true {
+	if access.IsExpired() {
 		// this access has expired
 		return nil, ValidateAccessError{
 			AccessID: accessIDString,
@@ -76,7 +76,7 @@ func (s *service) ValidateAccess(accessIDString, password, userID string) (*prim
 	}
 	// TODO: implement specific user validation
 	// If no specific users specified, check for anonymous access.
-	if access.AllowAnonymous == true {
+	if access.AllowAnonymous {
 		if access.AnonymousPassword != "" {
 			// anonymous access with password is required.
 			if password == access.AnonymousPassword {
